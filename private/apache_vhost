@@ -1,0 +1,37 @@
+<VirtualHost *:80>
+    RewriteEngine On
+    # Double percentage below escapes Python string interpolation
+    RewriteCond %%{HTTP_HOST} ^%(url)s$ [NC]
+    RewriteRule ^(.*)$ https://%(url)s$1 [R=301,L]
+</VirtualHost>
+
+<VirtualHost *:443>
+    # Admin email, Server Name (domain name) and any aliases
+    ServerAdmin martin@ombuweb.com
+    ServerName %(url)s
+
+    # Index file and Document Root (where the public files are located)
+    DocumentRoot %(public_path)s
+
+    # Custom log file locations
+    ErrorLog  %(host_site_path)s/log/apache-error.log
+    CustomLog %(host_site_path)s/log/apache-access.log combined
+
+    # SSL
+    SSLEngine on
+    SSLCertificateFile %(host_site_path)s/private/%(url)s.crt
+    SSLCertificateKeyFile %(host_site_path)s/private/%(url)s.key
+    SSLCACertificateFile %(host_site_path)s/private/%(url)s.ca.crt
+
+    <Directory />
+        Options Indexes -ExecCGI FollowSymLinks -MultiViews
+        Order allow,deny
+        Allow from all
+
+        SetEnv APPLICATION_ENV production
+        RailsBaseURI /
+        PassengerResolveSymlinksInDocumentRoot on
+    </Directory>
+
+</VirtualHost>
+# vim:ft=apache
