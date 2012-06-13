@@ -4,7 +4,7 @@ from fabric.contrib import files
 #from butter import deploy
 
 env.repo_type = 'git'
-env.repo = 'https://github.com/ombu/redmine'
+env.repo = 'git@github.com:ombu/tickets.git'
 env.use_ssh_config = True
 env.forward_agent = True
 
@@ -14,8 +14,7 @@ def production():
     """
     The production server definition
     """
-    #env.hosts = ['ombu@tk:34165']
-    env.hosts = ['ombu@184.169.222.15:34165']
+    env.hosts = ['ombu@tk:34165']
     env.host_type = 'production'
     env.user = 'ombu'
     env.url = 'tk.ombuweb.com'
@@ -25,8 +24,11 @@ def production():
     env.db_db = 'tickets'
     env.db_user = 'tickets'
     env.db_pw = 'SETME'
-    env.db_host = 'localhost'
+    env.db_host = 'SETME'
     env.db_root_pw = 'SETME'
+    env.smtp_host = 'SETME'
+    env.smtp_user = 'SETME'
+    env.smtp_pw = 'SETME'
 
 @task
 def setup_env():
@@ -61,20 +63,25 @@ def setup_env_helloworld():
     files.append(env.public_path + '/index.html', '<h1>hello world</h1>')
 
 @task
-def deploy():
+def deploy(refspec):
+    """ a git refspec such as a commit code or branch. note branches should
+    include the origin (e.g. origin/1.x instead of 1.x) """
     p = env.host_site_path
     if not files.exists(p + '/repo'):
         run('cd %s && git clone %s repo' % (p, env.repo))   # clone
     else:
         run('cd %s/repo && git fetch' % p)                  # or fetch
     with(cd(p)):
-        run('cd repo && git reset --hard origin/master && git submodule update --init --recursive')
+        run('cd repo && git reset --hard %s && git submodule update ' % refspec
+            + '--init --recursive' )
         run('rm -rf current && cp -r repo/redmine current')
     with(cd(p + '/current')):
         run('bundle install --without development test')
         run('rake generate_session_store')
     files.upload_template('private/database.yml', p +
     '/current/config/database.yml', env)
+    files.upload_template('private/configuration.yml', p +
+    '/current/config/configuration.yml', env)
     sudo('service apache2 restart')
 
 @task
@@ -102,7 +109,3 @@ def restore_db():
         run('rake db:migrate RAILS_ENV="production"')
         #run('rake redmine:plugins:migrate RAILS_ENV="production"')
         run('rake tmp:clear')
-
-
-@task
-def install_plugin():
