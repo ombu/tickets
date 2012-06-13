@@ -1,4 +1,5 @@
 <VirtualHost *:80>
+    ServerName %(url)s
     RewriteEngine On
     # Double percentage below escapes Python string interpolation
     RewriteCond %%{HTTP_HOST} ^%(url)s$ [NC]
@@ -29,7 +30,9 @@
         Allow from all
 
         SetEnv APPLICATION_ENV production
+        # For Redmine 1.x, use RailsBaseURI, for Redmine 2.x, use RackBaseURI
         RailsBaseURI /
+        # RackBaseURI /
         PassengerResolveSymlinksInDocumentRoot on
     </Directory>
 
