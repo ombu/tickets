@@ -75,13 +75,15 @@ def deploy(refspec):
         run('cd repo && git reset --hard %s && git submodule update ' % refspec
             + '--init --recursive' )
         run('rm -rf current && cp -r repo/redmine current')
-    with(cd(p + '/current')):
-        run('bundle install --without development test')
-        run('rake generate_session_store')
     files.upload_template('private/database.yml', p +
     '/current/config/database.yml', env)
     files.upload_template('private/configuration.yml', p +
     '/current/config/configuration.yml', env)
+    files.upload_template('private/Gemfile.local', p +
+    '/current/Gemfile.local')
+    with(cd(p + '/current')):
+        run('bundle install --without development test')
+        run('rake generate_session_store')
     sudo('service apache2 restart')
 
 @task
@@ -107,5 +109,18 @@ def restore_db():
         | mysql -u%(db_user)s  -p%(db_pw)s -D %(db_db)s" % env)
     with(cd(env.host_site_path + '/current')):
         run('rake db:migrate RAILS_ENV="production"')
-        #run('rake redmine:plugins:migrate RAILS_ENV="production"')
         run('rake tmp:clear')
+
+@task
+def install_plugins():
+    """ Install plugins in plugins/* """
+    with(cd(env.host_site_path)):
+        run("""
+        for plugin in `ls repo/plugins`
+        do
+            if [ -d current/vendor/plugins/$plugin ]; then
+                rm -rf current/vendor/plugins/$plugin
+            fi
+        done""")
+        run('cp -r repo/plugins/* current/vendor/plugins')
+        run('cd current && rake db:migrate_plugins RAILS_ENV="production"')
