@@ -1,0 +1,2 @@
+# Plugin dependencies go here
+gem "rdiscount"  # by markdown_formatter
