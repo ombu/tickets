@@ -10,14 +10,35 @@ env.forward_agent = True
 
 # Host settings
 @task
+def staging():
+    """
+    The staging server definition
+    """
+    env.hosts = ['ombu@tickets:34165']
+    env.host_type = 'staging'
+    env.user = 'ombu'
+    env.url = 'tickets.stage.ombuweb.com'
+    env.host_webserver_user = 'www-data'
+    env.host_site_path = '/home/ombu/redmine-stage'
+    env.public_path = '/home/ombu/redmine-stage/current/public'
+    env.db_db = 'tickets-stage'
+    env.db_user = 'tickets-stage'
+    env.db_pw = 'SETME'
+    env.db_host = 'SETME'
+    env.db_root_pw = 'SETME'
+    env.smtp_host = 'SETME'
+    env.smtp_user = 'SETME'
+    env.smtp_pw = 'SETME'
+
+@task
 def production():
     """
     The production server definition
     """
-    env.hosts = ['ombu@tk:34165']
+    env.hosts = ['ombu@tickets:34165']
     env.host_type = 'production'
     env.user = 'ombu'
-    env.url = 'tk.ombuweb.com'
+    env.url = 'tickets.ombuweb.com'
     env.host_webserver_user = 'www-data'
     env.host_site_path = '/home/ombu/redmine'
     env.public_path = '/home/ombu/redmine/current/public'
@@ -45,11 +66,11 @@ def setup_env_dir():
     print('Site directory structure created at: %s' % env.host_site_path)
 
 def setup_env_webserver_ssl():
-    files.upload_template('private/' + env.url + '.key', env.host_site_path +
+    files.upload_template('private/ombuweb.com.key', env.host_site_path +
             '/private/' + env.url + '.key')
-    files.upload_template('private/' + env.url + '.ca.crt', env.host_site_path +
+    files.upload_template('private/ombuweb.com.ca.crt', env.host_site_path +
             '/private/' + env.url + '.ca.crt')
-    files.upload_template('private/' + env.url + '.crt', env.host_site_path +
+    files.upload_template('private/ombuweb.com.crt', env.host_site_path +
             '/private/' + env.url + '.crt')
     files.upload_template('private/apache_vhost', env.host_site_path +
             '/private/' + env.url, env)
@@ -124,3 +145,16 @@ def install_plugins():
         done""")
         run('cp -r repo/plugins/* current/vendor/plugins')
         run('cd current && rake db:migrate_plugins RAILS_ENV="production"')
+
+@task
+def add_repo(name):
+    """ Add a repo to the server """
+    path = '/mnt/repos/' + name
+    if(files.exists(path)):
+        abort('Repo path exists: ' + path)
+    else:
+        run('git clone --bare git@bitbucket.org:ombu/%s.git %s' % (name, path))
+        with(cd(path)):
+            run('git remote add origin git@bitbucket.org:ombu/' + name)
+        with(cd(env.host_site_path + '/current')):
+            run('ruby script/runner "Repository.fetch_changesets" -e production')
