@@ -1,2 +1,3 @@
 # Plugin dependencies go here
 gem "rdiscount"  # by markdown_formatter
+gem "json"       # by github_hook
