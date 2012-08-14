@@ -154,7 +154,5 @@ def add_repo(name):
         abort('Repo path exists: ' + path)
     else:
         run('git clone --bare git@bitbucket.org:ombu/%s.git %s' % (name, path))
-        with(cd(path)):
-            run('git remote add origin git@bitbucket.org:ombu/' + name)
         with(cd(env.host_site_path + '/current')):
             run('ruby script/runner "Repository.fetch_changesets" -e production')
