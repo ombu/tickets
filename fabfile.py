@@ -1,4 +1,4 @@
-from fabric.api import task, env, run, abort, sudo, cd
+from fabric.api import task, env, run, abort, sudo, cd, execute
 from fabric.contrib import console
 from fabric.contrib import files
 
@@ -29,7 +29,7 @@ def staging():
     env.smtp_host = 'SETME'
     env.smtp_user = 'SETME'
     env.smtp_pw = 'SETME'
-    env.attachment_path = '/home/ombu/redmine-uploads'
+    env.attachment_path = '/home/ombu/redmine-uploads-stage'
 
 
 @task
@@ -52,7 +52,7 @@ def production():
     env.smtp_host = 'SETME'
     env.smtp_user = 'SETME'
     env.smtp_pw = 'SETME'
-    env.attachment_path = '/home/ombu/redmine-uploads-stage'
+    env.attachment_path = '/home/ombu/redmine-uploads'
 
 
 @task
@@ -111,8 +111,9 @@ def deploy(refspec):
     files.upload_template('private/Gemfile.local', p +
     '/current/Gemfile.local')
     with(cd(p + '/current')):
-        run('bundle install --without development test')
+        sudo('bundle install --without development test')
         run('rake generate_session_store')
+        execute(install_plugins);
     sudo('service apache2 restart')
 
 
@@ -146,6 +147,8 @@ def install_plugins():
         done""")
         run('cp -r repo/plugins/* current/vendor/plugins')
         run('cd current && rake db:migrate_plugins RAILS_ENV="production"')
+        run('rake db:migrate RAILS_ENV="production"')
+        run('rake tmp:clear')
 
 
 @task
