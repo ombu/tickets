@@ -8,5 +8,5 @@
 	path = plugins/redmine_markdown_formatter
 	url = git://github.com/bitherder/redmine_markdown_formatter.git
 [submodule "plugins/timesheet"]
-	path = plugins/timesheet
+	path = plugins/timesheet_plugin
 	url = git://github.com/edavis10/redmine-timesheet-plugin.git
