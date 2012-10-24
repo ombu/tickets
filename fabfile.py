@@ -1,12 +1,12 @@
 from fabric.api import task, env, run, abort, sudo, cd
 from fabric.contrib import console
 from fabric.contrib import files
-#from butter import deploy
 
 env.repo_type = 'git'
 env.repo = 'git@github.com:ombu/tickets.git'
 env.use_ssh_config = True
 env.forward_agent = True
+
 
 # Host settings
 @task
@@ -29,6 +29,8 @@ def staging():
     env.smtp_host = 'SETME'
     env.smtp_user = 'SETME'
     env.smtp_pw = 'SETME'
+    env.attachment_path = '/home/ombu/redmine-uploads'
+
 
 @task
 def production():
@@ -50,11 +52,14 @@ def production():
     env.smtp_host = 'SETME'
     env.smtp_user = 'SETME'
     env.smtp_pw = 'SETME'
+    env.attachment_path = '/home/ombu/redmine-uploads-stage'
+
 
 @task
 def setup_env():
     setup_env_dir()
     setup_env_webserver_ssl()
+
 
 def setup_env_dir():
     if files.exists(env.host_site_path):
@@ -64,6 +69,7 @@ def setup_env_dir():
     run('mkdir -p %s' % env.host_site_path)
     run('cd %s && mkdir files log private' % env.host_site_path)
     print('Site directory structure created at: %s' % env.host_site_path)
+
 
 def setup_env_webserver_ssl():
     files.upload_template('private/ombuweb.com.key', env.host_site_path +
@@ -79,9 +85,11 @@ def setup_env_webserver_ssl():
     sudo('a2ensite %s' % env.url)
     sudo('a2enmod rewrite ssl')
 
+
 def setup_env_helloworld():
     run('mkdir -p ' + env.public_path)
     files.append(env.public_path + '/index.html', '<h1>hello world</h1>')
+
 
 @task
 def deploy(refspec):
@@ -107,30 +115,23 @@ def deploy(refspec):
         run('rake generate_session_store')
     sudo('service apache2 restart')
 
-@task
-def restore():
-    """ restore files & db from backup """
-    restore_db()
-    restore_files()
 
 @task
-def restore_files():
+def sync_stage():
     """ restore files from backup """
-    run("rsync --human-readable --progress --archive --backup --compress \
-        ombu@web301.webfaction.com:/home/ombu/webapps/tickets2/redmine/files/ \
-        %(host_site_path)s/files/" % env)
+    #run("rsync --human-readable --progress --archive --backup --compress \
+    #    ombu@web301.webfaction.com:/home/ombu/webapps/tickets2/redmine/files/ \
+    #    %(host_site_path)s/files/" % env)
+    #run("""echo "drop database if exists %(db_db)s; \
+    #    create database %(db_db)s character set utf8; \
+    #    grant all privileges on %(db_db)s.* to '%(db_user)s'@'%(db_host)s' identified by '%(db_pw)s';" \
+    #    | mysql -u root -p%(db_root_pw)s""" % env)
+    #run("ssh -C ombu@web301.webfaction.com mysqldump -u ombu_tickets2 ombu_tickets2 \
+    #    | mysql -u%(db_user)s  -p%(db_pw)s -D %(db_db)s" % env)
+    #with(cd(env.host_site_path + '/current')):
+    #    run('rake db:migrate RAILS_ENV="production"')
+    #    run('rake tmp:clear')
 
-@task
-def restore_db():
-    run("""echo "drop database if exists %(db_db)s; \
-        create database %(db_db)s character set utf8; \
-        grant all privileges on %(db_db)s.* to '%(db_user)s'@'%(db_host)s' identified by '%(db_pw)s';" \
-        | mysql -u root -p%(db_root_pw)s""" % env)
-    run("ssh -C ombu@web301.webfaction.com mysqldump -u ombu_tickets2 ombu_tickets2 \
-        | mysql -u%(db_user)s  -p%(db_pw)s -D %(db_db)s" % env)
-    with(cd(env.host_site_path + '/current')):
-        run('rake db:migrate RAILS_ENV="production"')
-        run('rake tmp:clear')
 
 @task
 def install_plugins():
@@ -145,6 +146,7 @@ def install_plugins():
         done""")
         run('cp -r repo/plugins/* current/vendor/plugins')
         run('cd current && rake db:migrate_plugins RAILS_ENV="production"')
+
 
 @task
 def add_repo(name):
