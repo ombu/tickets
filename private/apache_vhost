@@ -15,14 +15,14 @@
     DocumentRoot %(public_path)s
 
     # Custom log file locations
-    ErrorLog  %(host_site_path)s/log/apache-error.log
-    CustomLog %(host_site_path)s/log/apache-access.log combined
+    ErrorLog  %(app_path)s/log/apache-error.log
+    CustomLog %(app_path)s/log/apache-access.log combined
 
     # SSL
     SSLEngine on
-    SSLCertificateFile %(host_site_path)s/private/%(url)s.crt
-    SSLCertificateKeyFile %(host_site_path)s/private/%(url)s.key
-    SSLCACertificateFile %(host_site_path)s/private/%(url)s.ca.crt
+    SSLCertificateFile /etc/ssl/certs_local/ombuweb.com.pem
+    SSLCertificateKeyFile /etc/ssl/certs_local/ombuweb.com.key
+    #SSLCACertificateFile %(app_path)s/private/%(url)s.ca.crt
 
     <Directory />
         Options Indexes -ExecCGI FollowSymLinks -MultiViews

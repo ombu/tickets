@@ -1,6 +1,5 @@
-from fabric.api import task, env, run, abort, sudo, cd, execute
-from fabric.contrib import console
-from fabric.contrib import files
+from fabric.api import task, env, run, abort, sudo, cd, execute, prompt
+from fabric.contrib import console, files
 
 env.repo_type = 'git'
 env.repo = 'git@github.com:ombu/tickets.git'
@@ -9,6 +8,27 @@ env.forward_agent = True
 
 
 # Host settings
+@task
+def local():
+    """
+    The local (Vagrant) server definition
+    """
+    env.user = 'axolx'
+    env.hosts = ['axolx@tickets.local:22']
+    env.host_type = 'development'
+    env.url = 'tickets.local'
+    env.host_webserver_user = 'www-data'
+    env.app_path = '/var/www/tickets.local'
+    env.public_path = '/var/www/tickets.local/current/public'
+    env.db_db = 'tickets_dev'
+    env.db_user = 'tickets_dev'
+    env.db_pw = 'meh'
+    env.db_host = 'ombudb.cpuj5trym3at.us-west-2.rds.amazonaws.com'
+    env.smtp_host = 'SETME'
+    env.smtp_user = 'SETME'
+    env.smtp_pw = 'SETME'
+
+
 @task
 def staging():
     """
@@ -19,7 +39,7 @@ def staging():
     env.user = 'ombu'
     env.url = 'tickets.stage.ombuweb.com'
     env.host_webserver_user = 'www-data'
-    env.host_site_path = '/home/ombu/redmine-stage'
+    env.app_path = '/home/ombu/redmine-stage'
     env.public_path = '/home/ombu/redmine-stage/current/public'
     env.db_db = 'tickets-stage'
     env.db_user = 'tickets-stage'
@@ -29,7 +49,6 @@ def staging():
     env.smtp_host = 'SETME'
     env.smtp_user = 'SETME'
     env.smtp_pw = 'SETME'
-    env.attachment_path = '/home/ombu/redmine-uploads-stage'
 
 
 @task
@@ -42,78 +61,88 @@ def production():
     env.user = 'ombu'
     env.url = 'tickets.ombuweb.com'
     env.host_webserver_user = 'www-data'
-    env.host_site_path = '/home/ombu/redmine'
+    env.app_path = '/home/ombu/redmine'
     env.public_path = '/home/ombu/redmine/current/public'
     env.db_db = 'tickets'
     env.db_user = 'tickets'
-    env.db_pw = 'SETME'
-    env.db_host = 'SETME'
-    env.db_root_pw = 'SETME'
-    env.smtp_host = 'SETME'
-    env.smtp_user = 'SETME'
-    env.smtp_pw = 'SETME'
-    env.attachment_path = '/home/ombu/redmine-uploads'
+    env.db_pw = 'VuqRTwcLrjsT75H'
+    env.db_host = 'localhost'
+    env.smtp_host = 'mail.authsmtp.com'
+    env.smtp_user = 'ac40599'
+    env.smtp_pw = '7rzomKKHNYik7rgS'
 
 
 @task
 def setup_env():
     setup_env_dir()
-    setup_env_webserver_ssl()
+    setup_env_vhost()
 
 
 def setup_env_dir():
-    if files.exists(env.host_site_path):
-        if console.confirm("Found %s. Replace it?" % env.host_site_path, default=False):
-            run('rm -rf %s' % env.host_site_path)
+    if files.exists(env.app_path):
+        if console.confirm("Found %s. Replace it?" % env.app_path, default=False):
+            run('rm -rf %s' % env.app_path)
         else: abort('Quitting')
-    run('mkdir -p %s' % env.host_site_path)
-    run('cd %s && mkdir files log private' % env.host_site_path)
-    print('Site directory structure created at: %s' % env.host_site_path)
+    run('mkdir -p %s' % env.app_path)
+    run('cd %(app_path)s && chgrp www-data %(app_path)s && chmod g+s %(app_path)s' % env)
+    run('cd %(app_path)s && mkdir files log private' % env)
+    print('Site directory structure created at: %(app_path)s' % env)
 
 
-def setup_env_webserver_ssl():
-    files.upload_template('private/ombuweb.com.key', env.host_site_path +
-            '/private/' + env.url + '.key')
-    files.upload_template('private/ombuweb.com.ca.crt', env.host_site_path +
-            '/private/' + env.url + '.ca.crt')
-    files.upload_template('private/ombuweb.com.crt', env.host_site_path +
-            '/private/' + env.url + '.crt')
-    files.upload_template('private/apache_vhost', env.host_site_path +
-            '/private/' + env.url, env)
-    sudo('ln -fs %s/private/%s /etc/apache2/sites-available/%s' %
-            (env.host_site_path, env.url, env.url))
+def setup_env_vhost():
+    files.upload_template(
+        'private/apache_vhost', env.app_path + '/private/' + env.url, env)
+    sudo(
+        'ln -fs %(app_path)s/private/%(url)s '
+        '/etc/apache2/sites-available/%(url)s' % env)
     sudo('a2ensite %s' % env.url)
-    sudo('a2enmod rewrite ssl')
-
-
-def setup_env_helloworld():
-    run('mkdir -p ' + env.public_path)
-    files.append(env.public_path + '/index.html', '<h1>hello world</h1>')
 
 
 @task
 def deploy(refspec):
     """ a git refspec such as a commit code or branch. note branches should
     include the origin (e.g. origin/1.x instead of 1.x) """
-    p = env.host_site_path
+    p = env.app_path
     if not files.exists(p + '/repo'):
-        run('cd %s && git clone %s repo' % (p, env.repo))   # clone
+        run('cd %s && git clone -q %s repo' % (p, env.repo))   # clone
     else:
         run('cd %s/repo && git fetch' % p)                  # or fetch
     with(cd(p)):
-        run('cd repo && git reset --hard %s && git submodule update ' % refspec
-            + '--init --recursive' )
-        run('rm -rf current && cp -r repo/redmine current')
+        run('cd repo && git reset --hard %s && git submodule -q update '
+            % refspec + '--init --recursive')
+        sudo('rm -rf current')
+        run('cp -r repo/redmine current')
     files.upload_template('private/database.yml', p +
-    '/current/config/database.yml', env)
+                          '/current/config/database.yml', env)
     files.upload_template('private/configuration.yml', p +
-    '/current/config/configuration.yml', env)
+                          '/current/config/configuration.yml', env)
     files.upload_template('private/Gemfile.local', p +
-    '/current/Gemfile.local')
+                          '/current/Gemfile.local')
     with(cd(p + '/current')):
-        run('bundle install --without development test')
+        # Install these manually because in Ubuntu 12.04 compilation fails with
+        # Bundler
+        sudo('gem install --no-ri --no-rdoc bundler json mysql rdiscount '
+             'rmagick')
+        sudo('bundle install --without development test postgresql sqlite')
         run('rake generate_session_store')
-        execute(install_plugins);
+        execute(install_plugins)
+    sudo('service apache2 force-reload')
+
+
+@task
+def uninstall():
+    uninstall = prompt(
+        "This operation can lead to data loss. Are you sure "
+        "you want delete the tickets app on %s?" % env.host_type)
+    if not uninstall == 'y':
+        abort('Sync aborted')
+    sudo('if [ -d %(app_path)s ]; then rm -rf %(app_path)s; fi' % env)
+    sudo(
+        'if [ -h /etc/apache2/sites-enabled/%(url)s ]; then unlink '
+        '/etc/apache2/sites-enabled/%(url)s; fi' % env)
+    sudo(
+        'if [ -h /etc/apache2/sites-available/%(url)s ]; then unlink '
+        '/etc/apache2/sites-available/%(url)s; fi' % env)
     sudo('service apache2 restart')
 
 
@@ -122,14 +151,14 @@ def sync_stage():
     """ restore files from backup """
     #run("rsync --human-readable --progress --archive --backup --compress \
     #    ombu@web301.webfaction.com:/home/ombu/webapps/tickets2/redmine/files/ \
-    #    %(host_site_path)s/files/" % env)
+    #    %(app_path)s/files/" % env)
     #run("""echo "drop database if exists %(db_db)s; \
     #    create database %(db_db)s character set utf8; \
     #    grant all privileges on %(db_db)s.* to '%(db_user)s'@'%(db_host)s' identified by '%(db_pw)s';" \
     #    | mysql -u root -p%(db_root_pw)s""" % env)
     #run("ssh -C ombu@web301.webfaction.com mysqldump -u ombu_tickets2 ombu_tickets2 \
     #    | mysql -u%(db_user)s  -p%(db_pw)s -D %(db_db)s" % env)
-    #with(cd(env.host_site_path + '/current')):
+    #with(cd(env.app_path + '/current')):
     #    run('rake db:migrate RAILS_ENV="production"')
     #    run('rake tmp:clear')
 
@@ -137,7 +166,7 @@ def sync_stage():
 @task
 def install_plugins():
     """ Install plugins in plugins/* """
-    with(cd(env.host_site_path)):
+    with(cd(env.app_path)):
         run("""
         for plugin in `ls repo/plugins`
         do
@@ -146,10 +175,12 @@ def install_plugins():
             fi
         done""")
         run('cp -r repo/plugins/* current/vendor/plugins')
-        with(cd(env.host_site_path + '/current')):
-            run('bundle install --without development test')
-            run('rake db:migrate_plugins RAILS_ENV="production"')
-            run('rake db:migrate RAILS_ENV="production"')
+        with(cd(env.app_path + '/current')):
+            sudo('bundle install --without development test postgresql sqlite')
+            # "production" hardcoded below because the current env
+            # credentials are interpolated in the production config
+            run('rake db:migrate_plugins RAILS_ENV=production')
+            run('rake db:migrate RAILS_ENV=production')
             run('rake tmp:clear')
 
 
@@ -160,6 +191,6 @@ def add_repo(name):
     if(files.exists(path)):
         abort('Repo path exists: ' + path)
     else:
-        run('git clone --bare git@bitbucket.org:ombu/%s.git %s' % (name, path))
-        with(cd(env.host_site_path + '/current')):
+        run('git clone -q --bare git@bitbucket.org:ombu/%s.git %s' % (name, path))
+        with(cd(env.app_path + '/current')):
             run('ruby script/runner "Repository.fetch_changesets" -e production')
