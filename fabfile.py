@@ -124,8 +124,9 @@ def deploy(refspec):
         sudo('gem install --no-ri --no-rdoc bundler json mysql rdiscount '
              'rmagick')
         sudo('bundle install --without development test postgresql sqlite')
-        run('rake generate_session_store')
         execute(install_plugins)
+        run('rake tmp:cache:clear')
+        run('rake tmp:sessions:clear')
     sudo('service apache2 force-reload')
 
 
@@ -170,18 +171,16 @@ def install_plugins():
         run("""
         for plugin in `ls repo/plugins`
         do
-            if [ -d current/vendor/plugins/$plugin ]; then
-                rm -rf current/vendor/plugins/$plugin
+            if [ -d current/plugins/$plugin ]; then
+                rm -rf current/plugins/$plugin
             fi
         done""")
-        run('cp -r repo/plugins/* current/vendor/plugins')
+        run('cp -r repo/plugins/* current/plugins')
         with(cd(env.app_path + '/current')):
             sudo('bundle install --without development test postgresql sqlite')
             # "production" hardcoded below because the current env
             # credentials are interpolated in the production config
-            run('rake db:migrate_plugins RAILS_ENV=production')
-            run('rake db:migrate RAILS_ENV=production')
-            run('rake tmp:clear')
+            run('rake redmine:plugins:migrate RAILS_ENV=production')
 
 
 @task

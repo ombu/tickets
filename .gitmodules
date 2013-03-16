@@ -4,9 +4,6 @@
 [submodule "plugins/github_hook"]
 	path = plugins/github_hook
 	url = git://github.com/koppen/redmine_github_hook.git
-[submodule "plugins/redmine_markdown_formatter"]
-	path = plugins/redmine_markdown_formatter
-	url = git://github.com/bitherder/redmine_markdown_formatter.git
 [submodule "plugins/timesheet_plugin"]
 	path = plugins/timesheet_plugin
-	url = git://github.com/edavis10/redmine-timesheet-plugin.git
+	url = git://github.com/techarete/redmine_timesheet_plugin.git
