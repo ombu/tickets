@@ -17,7 +17,6 @@ def local():
     env.hosts = ['axolx@tickets.local:22']
     env.host_type = 'development'
     env.url = 'tickets.local'
-    env.host_webserver_user = 'www-data'
     env.app_path = '/var/www/tickets.local'
     env.public_path = '/var/www/tickets.local/current/public'
     env.db_db = 'tickets_dev'
@@ -38,7 +37,6 @@ def staging():
     env.host_type = 'staging'
     env.user = 'ombu'
     env.url = 'tickets.stage.ombuweb.com'
-    env.host_webserver_user = 'www-data'
     env.app_path = '/home/ombu/redmine-stage'
     env.public_path = '/home/ombu/redmine-stage/current/public'
     env.db_db = 'tickets-stage'
@@ -60,7 +58,6 @@ def production():
     env.host_type = 'production'
     env.user = 'ombu'
     env.url = 'tickets.ombuweb.com'
-    env.host_webserver_user = 'www-data'
     env.app_path = '/home/ombu/redmine'
     env.public_path = '/home/ombu/redmine/current/public'
     env.db_db = 'tickets'
@@ -121,8 +118,6 @@ def deploy(refspec):
     with(cd(p + '/current')):
         # Install these manually because in Ubuntu 12.04 compilation fails with
         # Bundler
-        sudo('gem install --no-ri --no-rdoc bundler json mysql rdiscount '
-             'rmagick')
         sudo('bundle install --without development test postgresql sqlite')
         execute(install_plugins)
         run('rake tmp:cache:clear')
@@ -177,7 +172,7 @@ def install_plugins():
         done""")
         run('cp -r repo/plugins/* current/plugins')
         with(cd(env.app_path + '/current')):
-            sudo('bundle install --without development test postgresql sqlite')
+            # sudo('bundle install --without development test postgresql sqlite')
             # "production" hardcoded below because the current env
             # credentials are interpolated in the production config
             run('rake redmine:plugins:migrate RAILS_ENV=production')
