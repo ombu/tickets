@@ -1,4 +1,4 @@
 # Plugin dependencies go here
-gem "rdiscount"  # by markdown_formatter
 gem "json"       # by github_hook
-gem "webrat"     # by timesheet_plugin
+#gem "webrat"    # by timesheet_plugin
+gem "redcarpet"  # by redmine_redcarpet_formatter
