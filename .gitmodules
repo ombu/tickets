@@ -7,3 +7,6 @@
 [submodule "plugins/timesheet_plugin"]
 	path = plugins/timesheet_plugin
 	url = git://github.com/techarete/redmine_timesheet_plugin.git
+[submodule "plugins/redmine_redcarpet_formatter"]
+	path = plugins/redmine_redcarpet_formatter
+	url = git://github.com/alminium/redmine_redcarpet_formatter.git
