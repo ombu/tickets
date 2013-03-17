@@ -6,8 +6,8 @@ Vagrant::Config.run do |config|
   config.ssh.private_key_path = "/Users/axolx/.ssh/axolx-base"
 
   config.vm.provision :puppet, :options => "--verbose" do |puppet|
-    puppet.manifests_path = "puppet"
-    puppet.manifest_file  = "node.pp"
+    puppet.manifests_path = "/Users/axolx/sandbox/envs/puppetboot/repo/manifests"
+    puppet.manifest_file  = "tickets.pp"
     puppet.module_path = "/Users/axolx/sandbox/envs/puppetboot/repo/modules"
   end
 

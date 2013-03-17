@@ -175,6 +175,7 @@ def install_plugins():
             # sudo('bundle install --without development test postgresql sqlite')
             # "production" hardcoded below because the current env
             # credentials are interpolated in the production config
+            sudo('chmod 0770 Gemfile.lock')
             run('rake redmine:plugins:migrate RAILS_ENV=production')
 
 
