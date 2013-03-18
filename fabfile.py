@@ -54,12 +54,12 @@ def production():
     """
     The production server definition
     """
-    env.hosts = ['ombu@tickets:34165']
+    env.user = 'axolx'
+    env.hosts = ['axolx@54.244.195.139']
     env.host_type = 'production'
-    env.user = 'ombu'
     env.url = 'tickets.ombuweb.com'
-    env.app_path = '/home/ombu/redmine'
-    env.public_path = '/home/ombu/redmine/current/public'
+    env.app_path = '/var/www/tickets.ombuweb.com'
+    env.public_path = '/var/www/tickets.ombuweb.com/current/public'
     env.db_db = 'tickets'
     env.db_user = 'tickets'
     env.db_pw = 'VuqRTwcLrjsT75H'
@@ -67,6 +67,7 @@ def production():
     env.smtp_host = 'mail.authsmtp.com'
     env.smtp_user = 'ac40599'
     env.smtp_pw = '7rzomKKHNYik7rgS'
+    env.uploads_path = '/mnt/tickets/uploads'
 
 
 @task
@@ -82,7 +83,7 @@ def setup_env_dir():
         else: abort('Quitting')
     run('mkdir -p %s' % env.app_path)
     run('cd %(app_path)s && chgrp www-data %(app_path)s && chmod g+s %(app_path)s' % env)
-    run('cd %(app_path)s && mkdir files log private' % env)
+    run('cd %(app_path)s && mkdir log private' % env)
     print('Site directory structure created at: %(app_path)s' % env)
 
 
