@@ -1,8 +1,8 @@
 [submodule "redmine"]
 	path = redmine
 	url = git://github.com/edavis10/redmine.git
-[submodule "plugins/github_hook"]
-	path = plugins/github_hook
+[submodule "plugins/redmine_github_hook"]
+	path = plugins/redmine_github_hook
 	url = git://github.com/koppen/redmine_github_hook.git
 [submodule "plugins/redmine_redcarpet_formatter"]
 	path = plugins/redmine_redcarpet_formatter
