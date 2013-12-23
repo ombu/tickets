@@ -3,6 +3,7 @@ from fabric.contrib import console, files
 
 env.repo_type = 'git'
 env.repo = 'git@github.com:ombu/tickets.git'
+env.repo_branch = 'master'
 env.use_ssh_config = True
 env.forward_agent = True
 
@@ -13,16 +14,17 @@ def local():
     """
     The local (Vagrant) server definition
     """
+    env.repo_branch = 'feature/2.4'
     env.user = 'axolx'
-    env.hosts = ['axolx@tickets.local:22']
+    env.hosts = ['axolx@tickets.dev:22']
     env.host_type = 'development'
-    env.url = 'tickets.local'
-    env.app_path = '/var/www/tickets.local'
-    env.public_path = '/var/www/tickets.local/current/public'
-    env.db_db = 'tickets_dev'
-    env.db_user = 'tickets_dev'
-    env.db_pw = 'meh'
-    env.db_host = 'ombudb.cpuj5trym3at.us-west-2.rds.amazonaws.com'
+    env.url = 'tickets.dev'
+    env.app_path = '/var/www/tickets.dev'
+    env.public_path = '/var/www/tickets.dev/current/public'
+    env.db_host = 'qadb.cpuj5trym3at.us-west-2.rds.amazonaws.com'
+    env.db_db = 'tickets_local'
+    env.db_user = 'tickets_local'
+    env.db_pw = 'SETME'
     env.smtp_host = 'SETME'
     env.smtp_user = 'SETME'
     env.smtp_pw = 'SETME'
@@ -39,8 +41,9 @@ def staging():
     env.url = 'tickets.stage.ombuweb.com'
     env.app_path = '/home/ombu/redmine-stage'
     env.public_path = '/home/ombu/redmine-stage/current/public'
-    env.db_db = 'tickets-stage'
-    env.db_user = 'tickets-stage'
+    env.db_host = 'qadb.cpuj5trym3at.us-west-2.rds.amazonaws.com'
+    env.db_db = 'tickets_stage'
+    env.db_user = 'tickets_stage'
     env.db_pw = 'SETME'
     env.db_host = 'SETME'
     env.db_root_pw = 'SETME'
@@ -114,8 +117,9 @@ def deploy(refspec):
                           '/current/config/database.yml', env)
     files.upload_template('private/configuration.yml', p +
                           '/current/config/configuration.yml', env)
-    files.upload_template('private/Gemfile.local', p +
-                          '/current/Gemfile.local')
+    # Candidate to remove
+    #files.upload_template('private/Gemfile.local', p +
+    #                      '/current/Gemfile.local')
     with(cd(p + '/current')):
         # Install these manually because in Ubuntu 12.04 compilation fails with
         # Bundler

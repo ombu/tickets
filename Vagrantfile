@@ -1,17 +1,20 @@
-Vagrant::Config.run do |config|
+VAGRANTFILE_API_VERSION = '2'
 
-  config.vm.box = "precise-amd64-mr"
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+
   config.ssh.forward_agent = true
-  config.vm.network :bridged #, :bridge => "en1: Wi-Fi (AirPort)"
-  config.ssh.private_key_path = "/Users/axolx/.ssh/axolx-base"
+  config.vm.box = 'precise-amd64'
+  config.vm.network 'public_network', :bridge => 'en0: Wi-Fi (AirPort)'
+  config.cache.auto_detect = true
 
-  config.vm.provision :puppet, :options => "--verbose" do |puppet|
-    puppet.manifests_path = "/Users/axolx/sandbox/envs/puppetboot/repo/manifests"
-    puppet.manifest_file  = "tickets.pp"
-    puppet.module_path = "/Users/axolx/sandbox/envs/puppetboot/repo/modules"
+  config.vm.provision :puppet, :options => '--verbose' do |puppet|
+    puppet.manifests_path ='/Users/axolx/sandbox/envs/puppetboot/repo/manifests'
+    puppet.module_path = '/Users/axolx/sandbox/envs/puppetboot/repo/modules'
+    puppet.manifest_file  = 'theoffice.pp'
   end
 
   # share puppet manifest
-  config.vm.share_folder "puppet-manifest", "/etc/puppet", "/Users/axolx/sandbox/envs/puppetboot/repo"
+  config.vm.synced_folder '/Users/axolx/sandbox/envs/puppetboot/repo/',
+                          '/etc/puppet'
 
 end
