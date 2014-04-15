@@ -1,28 +1,14 @@
 <VirtualHost *:80>
-    ServerName %(url)s
-    RewriteEngine On
-    # Double percentage below escapes Python string interpolation
-    RewriteCond %%{HTTP_HOST} ^%(url)s$ [NC]
-    RewriteRule ^(.*)$ https://%(url)s$1 [R=301,L]
-</VirtualHost>
-
-<VirtualHost *:443>
     # Admin email, Server Name (domain name) and any aliases
     ServerAdmin martin@ombuweb.com
     ServerName %(url)s
 
     # Index file and Document Root (where the public files are located)
-    DocumentRoot %(public_path)s
+    DocumentRoot %(app_path)s/current/public
 
     # Custom log file locations
     ErrorLog  %(app_path)s/log/apache-error.log
     CustomLog %(app_path)s/log/apache-access.log combined
-
-    # SSL
-    SSLEngine on
-    SSLCertificateFile /etc/ssl/certs_local/ombuweb.com.pem
-    SSLCertificateKeyFile /etc/ssl/certs_local/ombuweb.com.key
-    #SSLCACertificateFile %(app_path)s/private/%(url)s.ca.crt
 
     <Directory />
         Options Indexes -ExecCGI FollowSymLinks -MultiViews
@@ -31,8 +17,8 @@
 
         SetEnv APPLICATION_ENV production
         # For Redmine 1.x, use RailsBaseURI, for Redmine 2.x, use RackBaseURI
-        RailsBaseURI /
-        # RackBaseURI /
+        # RailsBaseURI /
+        RackBaseURI /
         PassengerResolveSymlinksInDocumentRoot on
     </Directory>
 

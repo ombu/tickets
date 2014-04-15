@@ -10,7 +10,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.provision :puppet, :options => '--verbose' do |puppet|
     puppet.manifests_path ='/Users/axolx/sandbox/envs/puppetboot/repo/manifests'
     puppet.module_path = '/Users/axolx/sandbox/envs/puppetboot/repo/modules'
-    puppet.manifest_file  = 'theoffice.pp'
+    puppet.manifest_file  = 'tickets.pp'
   end
 
   # share puppet manifest

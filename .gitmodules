@@ -4,6 +4,3 @@
 [submodule "plugins/redmine_github_hook"]
 	path = plugins/redmine_github_hook
 	url = git://github.com/koppen/redmine_github_hook.git
-[submodule "plugins/redmine_redcarpet_formatter"]
-	path = plugins/redmine_redcarpet_formatter
-	url = git://github.com/alminium/redmine_redcarpet_formatter.git
