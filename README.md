@@ -1,4 +1,8 @@
-## Deploy via vagrant
+## Run Redmine locally
+ 
+TODO: Write
+
+## Deploy to Vagrant box
 
 1. `vagrant up`
 2. Configure your local DNS so you can ssh into the Vagrant VM via `ssh tickets
@@ -6,6 +10,8 @@
 3. `fab local setup_env`
 4. `fab local deploy:origin/feature/2.5`
 
+## Deploy to an AWS instance
+ 
 ## Update the staging environment (lame method)
 
 - Manually rsync `/home/ombu/redmine-uploads/` and
@@ -22,6 +28,8 @@
 
 ## Upgrade to a new version of Redmine
 
+TODO: Update
+    
     cd redmine && git fetch && git fetch --tags
     git checkout 1.4.4
     cd .. && git add redmine

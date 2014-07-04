@@ -10,8 +10,8 @@ env.gem_home = '/home/axolx/.gem'
 env.uploads_path = '/mnt/tickets/uploads'
 env.db_db = 'tickets'
 env.db_user = 'tickets'
-env.smtp_host = 'SETME'
-env.smtp_user = 'SETME'
+env.smtp_host = 'email-smtp.us-east-1.amazonaws.com'
+env.smtp_user = 'AKIAI7LZAOFJ5MKLR5BQ'
 env.smtp_pw = 'SETME'
 
 # Host settings
@@ -50,7 +50,7 @@ def production():
     env.host_type = 'production'
     env.url = 'tickets.ombuweb.com'
     env.app_path = '/var/www/tickets.ombuweb.com'
-    env.db_pw = 'VuqRTwcLrjsT75H'
+    env.db_pw = 'SETME'
 
 
 @task
@@ -114,7 +114,7 @@ def deploy(refspec):
             run('bundle exec rake tmp:sessions:clear' % env)
             run('bundle exec rake generate_secret_token' % env)
 
-    sudo('service apache2 force-reload')
+    run('sudo /etc/init.d/apache2 restart')
 
 
 @task
@@ -132,7 +132,7 @@ def uninstall():
     sudo(
         'if [ -h /etc/apache2/sites-available/%(url)s.conf ]; then unlink '
         '/etc/apache2/sites-available/%(url)s.conf; fi' % env)
-    sudo('service apache2 restart')
+    run('sudo /etc/init.d/apache2 restart')
 
 
 def _install_plugins():

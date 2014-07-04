@@ -3,10 +3,11 @@ default:
   email_delivery:
     delivery_method: :smtp
     smtp_settings:
+      enable_starttls_auto: true
       address: %(smtp_host)s
-      port: 25
+      port: 587
       domain: ombuweb.com
-      authentication: :plain
+      authentication: :login
       user_name: "%(smtp_user)s"
       password: "%(smtp_pw)s"
 
