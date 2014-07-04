@@ -7,7 +7,12 @@ env.repo = 'git@github.com:ombu/tickets.git'
 env.use_ssh_config = True
 env.forward_agent = True
 env.gem_home = '/home/axolx/.gem'
-
+env.uploads_path = '/mnt/tickets/uploads'
+env.db_db = 'tickets'
+env.db_user = 'tickets'
+env.smtp_host = 'SETME'
+env.smtp_user = 'SETME'
+env.smtp_pw = 'SETME'
 
 # Host settings
 @task
@@ -20,13 +25,7 @@ def local():
     env.url = 'tickets.local'
     env.app_path = '/var/www/tickets.local'
     env.db_host = 'qadb.cpuj5trym3at.us-west-2.rds.amazonaws.com'
-    env.db_db = 'tickets'
-    env.db_user = 'tickets'
     env.db_pw = 'SETME'
-    env.smtp_host = 'SETME'
-    env.smtp_user = 'SETME'
-    env.smtp_pw = 'SETME'
-    env.uploads_path = '/mnt/tickets.local/uploads'
 
 
 @task
@@ -39,13 +38,7 @@ def staging():
     env.url = 'tickets.stage.ombuweb.com'
     env.app_path = '/var/www/tickets.stage'
     env.db_host = 'qadb.cpuj5trym3at.us-west-2.rds.amazonaws.com'
-    env.db_db = 'tickets'
-    env.db_user = 'tickets'
     env.db_pw = 'SETME'
-    env.smtp_host = 'SETME'
-    env.smtp_user = 'SETME'
-    env.smtp_pw = 'SETME'
-    env.uploads_path = '/mnt/tickets.stage/uploads'
 
 
 @task
@@ -57,13 +50,7 @@ def production():
     env.host_type = 'production'
     env.url = 'tickets.ombuweb.com'
     env.app_path = '/var/www/tickets.ombuweb.com'
-    env.db_db = 'tickets'
-    env.db_user = 'tickets'
     env.db_pw = 'VuqRTwcLrjsT75H'
-    env.smtp_host = 'mail.authsmtp.com'
-    env.smtp_user = 'ac40599'
-    env.smtp_pw = '7rzomKKHNYik7rgS'
-    env.uploads_path = '/mnt/tickets/uploads'
 
 
 @task

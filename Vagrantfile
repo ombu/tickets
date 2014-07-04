@@ -3,7 +3,7 @@ VAGRANTFILE_API_VERSION = '2'
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   config.ssh.forward_agent = true
-  config.vm.box = 'precise32'
+  config.vm.box = 'trusty-i386'
   config.vm.network :private_network, :ip => '10.20.1.3'
   config.cache.auto_detect = true
 

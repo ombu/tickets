@@ -11,14 +11,9 @@
     CustomLog %(app_path)s/log/apache-access.log combined
 
     <Directory />
-        Options Indexes -ExecCGI FollowSymLinks -MultiViews
-        Order allow,deny
-        Allow from all
-
+        Options -Indexes -ExecCGI +FollowSymLinks -MultiViews
         SetEnv APPLICATION_ENV production
         SetEnv GEM_HOME /home/axolx/.gem
-        # For Redmine 1.x, use RailsBaseURI, for Redmine 2.x, use RackBaseURI
-        # RailsBaseURI /
         RackBaseURI /
         PassengerResolveSymlinksInDocumentRoot on
     </Directory>
