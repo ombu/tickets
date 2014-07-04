@@ -1,3 +1,11 @@
+## Deploy via vagrant
+
+1. `vagrant up`
+2. Configure your local DNS so you can ssh into the Vagrant VM via `ssh tickets
+.local`
+3. `fab local setup_env`
+4. `fab local deploy:origin/feature/2.5`
+
 ## Update the staging environment (lame method)
 
 - Manually rsync `/home/ombu/redmine-uploads/` and

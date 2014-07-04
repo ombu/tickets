@@ -16,6 +16,7 @@
         Allow from all
 
         SetEnv APPLICATION_ENV production
+        SetEnv GEM_HOME /home/axolx/.gem
         # For Redmine 1.x, use RailsBaseURI, for Redmine 2.x, use RackBaseURI
         # RailsBaseURI /
         RackBaseURI /
