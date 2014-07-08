@@ -46,7 +46,7 @@ def production():
     """
     The production server definition
     """
-    env.hosts = ['54.244.195.139']
+    env.hosts = ['54.185.183.93']
     env.host_type = 'production'
     env.url = 'tickets.ombuweb.com'
     env.app_path = '/var/www/tickets.ombuweb.com'
