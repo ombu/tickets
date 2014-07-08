@@ -3,7 +3,7 @@
 # Examples for PostgreSQL and SQLite3 can be found at the end.
 
 production:
-  adapter: mysql
+  adapter: mysql2
   host: %(db_host)s
   database: %(db_db)s
   username: %(db_user)s
