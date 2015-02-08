@@ -1,0 +1,1 @@
+- On deploy set up `public/plugin_asset` dir with write permissions by web user

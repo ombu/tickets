@@ -1,0 +1,6 @@
+[submodule "redmine"]
+	path = redmine
+	url = git://github.com/edavis10/redmine.git
+[submodule "plugins/redmine_github_hook"]
+	path = plugins/redmine_github_hook
+	url = git://github.com/koppen/redmine_github_hook.git

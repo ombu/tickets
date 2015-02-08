@@ -1,0 +1,27 @@
+<VirtualHost *:80>
+    # Admin email, Server Name (domain name) and any aliases
+    ServerAdmin martin@ombuweb.com
+    ServerName %(url)s
+
+    # Index file and Document Root (where the public files are located)
+    DocumentRoot %(app_path)s/current/public
+
+    # Custom log file locations
+    ErrorLog  %(app_path)s/log/apache-error.log
+    CustomLog %(app_path)s/log/apache-access.log combined
+
+    # If this request has not originated as an HTTPS request, redirect to HTTPS
+    RewriteEngine On
+    RewriteCond %{HTTP:X-Forwarded-Proto} !https
+    RewriteRule ^.*$ https://%{SERVER_NAME}%{REQUEST_URI}
+
+    <Directory />
+        Options -Indexes -ExecCGI +FollowSymLinks -MultiViews
+        SetEnv APPLICATION_ENV production
+        SetEnv GEM_HOME /home/axolx/.gem
+        RackBaseURI /
+        PassengerResolveSymlinksInDocumentRoot on
+    </Directory>
+
+</VirtualHost>
+# vim:ft=apache
