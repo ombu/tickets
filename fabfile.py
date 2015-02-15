@@ -1,44 +1,39 @@
 from fabric.api import task, env, run, abort, sudo, cd, execute, prompt, \
-    shell_env
+    shell_env, local
 from fabric.contrib import console, files
+from datetime import date
 
-env.repo_type = 'git'
-env.repo = 'git@github.com:ombu/tickets.git'
+PROD_DB_PW = 'SETME'
+SMTP_PW = 'SETME'
+
+PROD_DB_HOST = 'ombudb.cpuj5trym3at.us-west-2.rds.amazonaws.com'
+PROD_DB_HOST2 = 'proddb1.ombudev.com'
+VAGRANT_DB_PW = 'meh'
+
 env.use_ssh_config = True
 env.forward_agent = True
+env.repo = 'git@github.com:ombu/tickets.git'
 env.gem_home = '/home/axolx/.gem'
 env.uploads_path = '/mnt/tickets/uploads'
 env.db_db = 'tickets'
 env.db_user = 'tickets'
 env.smtp_host = 'email-smtp.us-east-1.amazonaws.com'
 env.smtp_user = 'AKIAI7LZAOFJ5MKLR5BQ'
-env.smtp_pw = 'SETME'
+env.smtp_pw = SMTP_PW
+
 
 # Host settings
 @task
-def local():
+def vagrant():
     """
     The local (Vagrant) server definition
     """
-    env.hosts = ['tickets.local:22']
-    env.host_type = 'development'
+    env.hosts = ['tickets.local']
+    env.environ = 'development'
     env.url = 'tickets.local'
     env.app_path = '/var/www/tickets.local'
-    env.db_host = 'qadb.cpuj5trym3at.us-west-2.rds.amazonaws.com'
-    env.db_pw = 'SETME'
-
-
-@task
-def staging():
-    """
-    The staging server definition
-    """
-    env.hosts = ['tickets.stage.ombuweb.com']
-    env.host_type = 'staging'
-    env.url = 'tickets.stage.ombuweb.com'
-    env.app_path = '/var/www/tickets.stage'
-    env.db_host = 'qadb.cpuj5trym3at.us-west-2.rds.amazonaws.com'
-    env.db_pw = 'SETME'
+    env.db_host = 'localhost'
+    env.db_pw = VAGRANT_DB_PW
 
 
 @task
@@ -47,10 +42,24 @@ def production():
     The production server definition
     """
     env.hosts = ['54.185.183.93']
-    env.host_type = 'production'
+    env.environ = 'production'
     env.url = 'tickets.ombuweb.com'
     env.app_path = '/var/www/tickets.ombuweb.com'
-    env.db_pw = 'SETME'
+    env.db_host = PROD_DB_HOST
+    env.db_pw = PROD_DB_PW
+
+
+@task
+def production_vpc():
+    """
+    The production server definition
+    """
+    env.hosts = ['52.10.14.7']
+    env.environ = 'production'
+    env.url = 'tickets.ombuweb.com'
+    env.app_path = '/var/www/tickets.ombuweb.com'
+    env.db_host = PROD_DB_HOST2
+    env.db_pw = PROD_DB_PW
 
 
 @task
@@ -104,7 +113,7 @@ def deploy(refspec):
 
     with shell_env(GEM_HOME=env.gem_home, RAILS_ENV='production'):
         with(cd(p + '/current')):
-            execute(_install_plugins)
+            execute(install_plugins)
             run('bundle install --path %(gem_home)s '
                 '--without="development test"' % env)
             run('bundle exec rake db:migrate' % env)
@@ -121,7 +130,7 @@ def deploy(refspec):
 def uninstall():
     doit = prompt(
         "This operation can lead to data loss. Are you sure "
-        "you want delete the tickets app on %s?" % env.host_type)
+        "you want delete the tickets app on %s?" % env.environ)
     if not doit == 'y':
         abort('Sync aborted')
     sudo('if [ -d %(app_path)s ]; then rm -rf %(app_path)s; fi' % env)
@@ -135,7 +144,8 @@ def uninstall():
     run('sudo /etc/init.d/apache2 restart')
 
 
-def _install_plugins():
+@task
+def install_plugins():
     """ Install plugins in plugins/* """
     with(cd(env.app_path)):
         run("""
@@ -160,3 +170,32 @@ def add_repo(name):
         with(cd(env.app_path + '/current')):
             run('ruby script/runner "Repository.fetch_changesets" -e '
                 'production')
+
+
+@task
+def prod_db_dump():
+    """ Download a dump of the tickets production database
+    """
+    today = date.today().strftime('%Y%m%d')
+    dump_name = "dbdumps/tickets-%s.sql.gz" % today
+    local("mkdir -p dbdumps")
+    print("Dumping tickets DB to: " + dump_name)
+    local(
+        'ssh tickets mysqldump -h%s -utickets '
+        '-p%s tickets | gzip -c > %s' % (PROD_DB_HOST, PROD_DB_PW,  dump_name))
+
+
+@task
+def load_db_dump_to_vagrant(dump_name):
+    """ Load a dump previously created with `prod_db_dump` into a running
+    Vagrant VM.
+    """
+    print("Loading DB dump to Vagrant: " + dump_name)
+    local(
+        """echo "grant all on tickets.* to tickets@localhost identified \
+    by '%s'; create database tickets;" | ssh tickets.local mysql -uroot """ %
+        VAGRANT_DB_PW)
+    local(
+        'gunzip -c dbdumps/%s '
+        '| ssh tickets.local mysql -utickets -Dtickets -p%s'
+        % (dump_name, VAGRANT_DB_PW))
