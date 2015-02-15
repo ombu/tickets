@@ -5,6 +5,7 @@ from datetime import date
 
 PROD_DB_PW = 'SETME'
 SMTP_PW = 'SETME'
+SMTP_PW = 'SETME'
 
 PROD_DB_HOST = 'ombudb.cpuj5trym3at.us-west-2.rds.amazonaws.com'
 PROD_DB_HOST2 = 'proddb1.ombudev.com'
@@ -79,6 +80,10 @@ def setup_env_dir():
     run('cd %(app_path)s && chgrp www-data %(app_path)s && chmod g+s %('
         'app_path)s' % env)
     run('cd %(app_path)s && mkdir log private' % env)
+
+    with shell_env(GEM_HOME=env.gem_home):
+        run('gem install bundler')
+
     print('Site directory structure created at: %(app_path)s' % env)
 
 
@@ -114,14 +119,15 @@ def deploy(refspec):
     with shell_env(GEM_HOME=env.gem_home, RAILS_ENV='production'):
         with(cd(p + '/current')):
             execute(install_plugins)
-            run('bundle install --path %(gem_home)s '
+            env.bundle_bin = "%s/bin/bundle" % env.gem_home
+            run('%(bundle_bin)s install --path %(gem_home)s '
                 '--without="development test"' % env)
-            run('bundle exec rake db:migrate' % env)
-            run('bundle exec rake redmine:plugins:migrate' %
+            run('%(bundle_bin)s exec rake db:migrate' % env)
+            run('%(bundle_bin)s exec rake redmine:plugins:migrate' %
                 env)
-            run('bundle exec rake tmp:cache:clear' % env)
-            run('bundle exec rake tmp:sessions:clear' % env)
-            run('bundle exec rake generate_secret_token' % env)
+            run('%(bundle_bin)s exec rake tmp:cache:clear' % env)
+            run('%(bundle_bin)s exec rake tmp:sessions:clear' % env)
+            run('%(bundle_bin)s exec rake generate_secret_token' % env)
 
     run('sudo /etc/init.d/apache2 restart')
 

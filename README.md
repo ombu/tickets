@@ -67,9 +67,12 @@ Prepare the server for Redmine, and deploy a Git refspec:
 
 ### Deploy to AWS
 
-Load a database dump into the database.
+Provision an instance with OMBU Puppet manifest `tickets.pp`. Load a database
+dump into the remote database server. Configure a host task for the instance
+in `fabfile.py`.
 
-    fab load_db_dump_to_vagrant:tickets-20150208.sql.gz
+    fab instance setup_env
+    fab instance deploy:origin/feature/2.6
 
 #### Update the staging environment (lame method)
 
