@@ -1,4 +1,14 @@
+Listen 443
+
 <VirtualHost *:80>
+    ServerName %(url)s
+    RewriteEngine On
+    # Double percentage below escapes Python string interpolation
+    RewriteCond %%{HTTP_HOST} ^%(url)s$ [NC]
+    RewriteRule ^(.*)$ https://%(url)s$1 [R=301,L]
+</VirtualHost>
+
+<VirtualHost *:443>
     # Admin email, Server Name (domain name) and any aliases
     ServerAdmin martin@ombuweb.com
     ServerName %(url)s
@@ -6,22 +16,24 @@
     # Index file and Document Root (where the public files are located)
     DocumentRoot %(app_path)s/current/public
 
+    # SSL
+    SSLEngine on
+    SSLCertificateFile /etc/ssl/certs_local/ombuweb.com.pem
+    SSLCertificateKeyFile /etc/ssl/certs_local/ombuweb.com.key
+
     # Custom log file locations
     ErrorLog  %(app_path)s/log/apache-error.log
     CustomLog %(app_path)s/log/apache-access.log combined
 
     # If this request has not originated as an HTTPS request, redirect to HTTPS
     RewriteEngine On
-    RewriteCond %{HTTP:X-Forwarded-Proto} !https
-    RewriteRule ^.*$ https://%{SERVER_NAME}%{REQUEST_URI}
 
     <Directory />
         Options -Indexes -ExecCGI +FollowSymLinks -MultiViews
-        SetEnv APPLICATION_ENV production
-        SetEnv GEM_HOME /home/axolx/.gem
+        SetEnv APPLICATION_ENV %(environ)s
+        SetEnv GEM_HOME %(gem_home)s
         RackBaseURI /
         PassengerResolveSymlinksInDocumentRoot on
     </Directory>
 
 </VirtualHost>
-# vim:ft=apache

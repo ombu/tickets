@@ -8,13 +8,13 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.cache.auto_detect = true
 
   config.vm.provision :puppet, :options => '--verbose' do |puppet|
-    puppet.manifests_path ='/Users/axolx/sandbox/envs/puppetboot/repo/manifests'
-    puppet.module_path = '/Users/axolx/sandbox/envs/puppetboot/repo/modules'
+    puppet.manifests_path ='/Users/axolx/sandbox/infrastructure/ombu/repo/manifests'
+    puppet.module_path = '/Users/axolx/sandbox/infrastructure/ombu/repo/modules'
     puppet.manifest_file  = 'tickets.pp'
   end
 
   # share puppet manifest
-  config.vm.synced_folder '/Users/axolx/sandbox/envs/puppetboot/repo/',
+  config.vm.synced_folder '/Users/axolx/sandbox/infrastructure/ombu/repo/',
                           '/etc/puppet'
 
 end
