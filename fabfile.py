@@ -187,7 +187,7 @@ def prod_db_dump():
     local("mkdir -p dbdumps")
     print("Dumping tickets DB to: " + dump_name)
     local(
-        'ssh tickets mysqldump -h%s -utickets '
+        'ssh tickets.ombuweb.com mysqldump -h%s -utickets '
         '-p%s tickets | gzip -c > %s' % (PROD_DB_HOST, PROD_DB_PW,  dump_name))
 
 
