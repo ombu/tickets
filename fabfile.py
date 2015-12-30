@@ -3,12 +3,9 @@ from fabric.api import task, env, run, abort, sudo, cd, execute, prompt, \
 from fabric.contrib import console, files
 from datetime import date
 
+PROD_DB_HOST = 'proddb1.ombudev.com'
 PROD_DB_PW = 'SETME'
 SMTP_PW = 'SETME'
-SMTP_PW = 'SETME'
-
-PROD_DB_HOST = 'ombudb.cpuj5trym3at.us-west-2.rds.amazonaws.com'
-PROD_DB_HOST2 = 'proddb1.ombudev.com'
 VAGRANT_DB_PW = 'meh'
 
 env.use_ssh_config = True
@@ -18,6 +15,7 @@ env.gem_home = '/home/axolx/.gem'
 env.uploads_path = '/mnt/tickets/uploads'
 env.db_db = 'tickets'
 env.db_user = 'tickets'
+
 env.smtp_host = 'email-smtp.us-east-1.amazonaws.com'
 env.smtp_user = 'AKIAI7LZAOFJ5MKLR5BQ'
 env.smtp_pw = SMTP_PW
@@ -42,24 +40,11 @@ def production():
     """
     The production server definition
     """
-    env.hosts = ['54.185.183.93']
-    env.environ = 'production'
-    env.url = 'tickets.ombuweb.com'
-    env.app_path = '/var/www/tickets.ombuweb.com'
-    env.db_host = PROD_DB_HOST
-    env.db_pw = PROD_DB_PW
-
-
-@task
-def production_vpc():
-    """
-    The production server definition
-    """
     env.hosts = ['52.10.14.7']
     env.environ = 'production'
     env.url = 'tickets.ombuweb.com'
     env.app_path = '/var/www/tickets.ombuweb.com'
-    env.db_host = PROD_DB_HOST2
+    env.db_host = PROD_DB_HOST
     env.db_pw = PROD_DB_PW
 
 
