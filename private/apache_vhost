@@ -1,5 +1,6 @@
 Listen 443
 
+
 <VirtualHost *:80>
     ServerName %(url)s
     RewriteEngine On
@@ -18,8 +19,8 @@ Listen 443
 
     # SSL
     SSLEngine on
-    SSLCertificateFile /etc/ssl/certs_local/ombuweb.com.pem
-    SSLCertificateKeyFile /etc/ssl/certs_local/ombuweb.com.key
+    SSLCertificateFile /etc/ssl/certs_local/star.ombuweb.com.pem
+    SSLCertificateKeyFile /etc/ssl/certs_local/star.ombuweb.com.key
 
     # Custom log file locations
     ErrorLog  %(app_path)s/log/apache-error.log
