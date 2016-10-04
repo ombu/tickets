@@ -21,6 +21,8 @@ Listen 443
     SSLEngine on
     SSLCertificateFile /etc/ssl/certs_local/star.ombuweb.com.pem
     SSLCertificateKeyFile /etc/ssl/certs_local/star.ombuweb.com.key
+    SSLCertificateChainFile /etc/ssl/certs_local/star.ombuweb.com.chain
+
 
     # Custom log file locations
     ErrorLog  %(app_path)s/log/apache-error.log
